@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:title="Entry Details"
+            app:navigationIcon="@android:drawable/ic_menu_revert" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/tvDetCustomerName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Customer Name"
+                    android:textColor="@color/primary"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvDetMobile"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="9876543210"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/tvDetStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_status_pending"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp"
+                    android:text="PENDING"
+                    android:textColor="@color/white"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <include layout="@layout/row_detail" android:id="@+id/rowWorkType" />
+                <include layout="@layout/row_detail" android:id="@+id/rowDate" />
+                <include layout="@layout/row_detail" android:id="@+id/rowPlace" />
+
+                <!-- Earth Work Specific -->
+                <include layout="@layout/row_detail" android:id="@+id/rowTime" />
+                <include layout="@layout/row_detail" android:id="@+id/rowDuration" />
+                <include layout="@layout/row_detail" android:id="@+id/rowRate" />
+
+                <!-- Loading Specific -->
+                <include layout="@layout/row_detail" android:id="@+id/rowTrips" />
+                <include layout="@layout/row_detail" android:id="@+id/rowChargePerTrip" />
+                <include layout="@layout/row_detail" android:id="@+id/rowTractor" />
+
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" android:layout_marginVertical="8dp"/>
+
+                <include layout="@layout/row_detail" android:id="@+id/rowTravel" />
+
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" android:layout_marginVertical="8dp"/>
+
+                <include layout="@layout/row_detail" android:id="@+id/rowTotal" />
+                <include layout="@layout/row_detail" android:id="@+id/rowPaid" />
+                <include layout="@layout/row_detail" android:id="@+id/rowPending" />
+                <include layout="@layout/row_detail" android:id="@+id/rowMethod" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <Button
+            android:id="@+id/btnUpdatePayment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="RECEIVE PAYMENT / UPDATE BILL"
+            android:backgroundTint="@color/primary"
+            android:textColor="@color/white" />
+
+    </LinearLayout>
+</ScrollView>

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "166030728179",
+    "project_id": "jcb-ledger",
+    "storage_bucket": "jcb-ledger.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:166030728179:android:920c07dad29b2076eb1086",
+        "android_client_info": {
+          "package_name": "com.example.jcbledger"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCfg1_MjaH8_givZnAcRJplG_5SrUbvUv0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

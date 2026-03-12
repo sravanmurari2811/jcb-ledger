@@ -1,0 +1,17 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- This is a placeholder for the foreground icon with padding -->
+    <!-- You can use your jcb_image.png here instead of a vector if you prefer -->
+    <path
+        android:fillColor="#FFCB05"
+        android:pathData="M24,24h60v60h-60z" />
+    <path
+        android:fillColor="#000000"
+        android:pathData="M30,45h10v20h-10z M45,45h10v20h-10z M60,45h10v20h-10z" />
+    <path
+        android:fillColor="#000000"
+        android:pathData="M30,70h40v3h-40z" />
+</vector>
