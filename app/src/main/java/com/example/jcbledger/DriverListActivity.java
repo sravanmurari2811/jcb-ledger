@@ -49,7 +49,16 @@ public class DriverListActivity extends AppCompatActivity {
     private void setupRecyclerView() {
         adapter = new DriverAdapter(drivers, driver -> {
             Intent intent = new Intent(this, DriverExpenseActivity.class);
-            intent.putExtra("driverId", (String) driver.get("id"));
+            // Safely convert ID to String to avoid casting issues
+            Object idObj = driver.get("id");
+            String idStr = (idObj != null) ? String.valueOf(idObj) : "";
+            
+            // If it's a double from Gson (e.g. 1.0), remove the .0
+            if (idStr.endsWith(".0")) {
+                idStr = idStr.substring(0, idStr.length() - 2);
+            }
+
+            intent.putExtra("driverId", idStr);
             intent.putExtra("driverName", (String) driver.get("name"));
             intent.putExtra("driverPhone", (String) driver.get("phone"));
             startActivity(intent);

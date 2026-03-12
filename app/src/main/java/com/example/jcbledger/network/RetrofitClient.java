@@ -6,9 +6,8 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RetrofitClient {
-    // 192.168.0.244 is your computer's IP address from ipconfig.
-    // Ensure your phone is connected to the same Wi-Fi (192.168.0.x).
-    private static final String BASE_URL = "http://192.168.0.244:8080/";
+    // Updated to use the live Render backend URL
+    private static final String BASE_URL = "https://jcb-ledger-1.onrender.com/";
     private static Retrofit retrofit = null;
 
     public static Retrofit getClient() {
