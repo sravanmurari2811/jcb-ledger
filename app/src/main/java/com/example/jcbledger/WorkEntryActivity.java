@@ -17,11 +17,14 @@ import com.example.jcbledger.model.Customer;
 import com.example.jcbledger.model.WorkEntry;
 import com.example.jcbledger.network.ApiService;
 import com.example.jcbledger.network.RetrofitClient;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -249,6 +252,9 @@ public class WorkEntryActivity extends AppCompatActivity {
     private void saveEntry() {
         if (!validateForm()) return;
 
+        binding.btnSave.setEnabled(false);
+        binding.btnSave.setText("Saving...");
+
         String mobile = binding.etMobile.getText().toString();
         String name = binding.etName.getText().toString();
         String date = binding.etDate.getText().toString();
@@ -299,12 +305,26 @@ public class WorkEntryActivity extends AppCompatActivity {
                     Toast.makeText(WorkEntryActivity.this, "Entry Saved Successfully", Toast.LENGTH_SHORT).show();
                     finish();
                 } else {
-                    Toast.makeText(WorkEntryActivity.this, "Failed to save entry. Please try again.", Toast.LENGTH_SHORT).show();
+                    String errorMsg = "Failed to save entry";
+                    try {
+                        if (response.errorBody() != null) {
+                            String errorJson = response.errorBody().string();
+                            Map<String, String> errorMap = new Gson().fromJson(errorJson, new TypeToken<Map<String, String>>(){}.getType());
+                            if (errorMap != null && errorMap.containsKey("message")) {
+                                errorMsg = errorMap.get("message");
+                            }
+                        }
+                    } catch (Exception e) {}
+                    Toast.makeText(WorkEntryActivity.this, errorMsg, Toast.LENGTH_LONG).show();
+                    binding.btnSave.setEnabled(true);
+                    binding.btnSave.setText("SAVE ENTRY");
                 }
             }
             @Override
             public void onFailure(Call<WorkEntry> call, Throwable t) {
                 Toast.makeText(WorkEntryActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                binding.btnSave.setEnabled(true);
+                binding.btnSave.setText("SAVE ENTRY");
             }
         });
     }

@@ -17,7 +17,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Wake up the Render backend as soon as the app starts
+        // Wake up the Render backend using the new lightweight health check
         pingServer();
 
         SharedPreferences prefs = getSharedPreferences("JCBPrefs", MODE_PRIVATE);
@@ -39,12 +39,12 @@ public class MainActivity extends AppCompatActivity {
 
     private void pingServer() {
         ApiService apiService = RetrofitClient.getClient().create(ApiService.class);
-        // Silent call to wake up Render
-        apiService.getTotalPending("WAKEUP").enqueue(new Callback<Map<String, Double>>() {
+        // Use the dedicated lightweight ping endpoint
+        apiService.ping().enqueue(new Callback<Map<String, String>>() {
             @Override
-            public void onResponse(Call<Map<String, Double>> call, Response<Map<String, Double>> response) {}
+            public void onResponse(Call<Map<String, String>> call, Response<Map<String, String>> response) {}
             @Override
-            public void onFailure(Call<Map<String, Double>> call, Throwable t) {}
+            public void onFailure(Call<Map<String, String>> call, Throwable t) {}
         });
     }
 }

@@ -10,6 +10,9 @@ import retrofit2.Call;
 import retrofit2.http.*;
 
 public interface ApiService {
+    @GET("api/health/ping")
+    Call<Map<String, String>> ping();
+
     @POST("api/auth/login")
     Call<Map<String, Object>> login(@Body Map<String, String> body);
 

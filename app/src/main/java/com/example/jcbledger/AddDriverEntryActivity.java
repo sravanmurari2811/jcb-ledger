@@ -9,9 +9,12 @@ import com.example.jcbledger.databinding.ActivityAddDriverEntryBinding;
 import com.example.jcbledger.model.DriverExpense;
 import com.example.jcbledger.network.ApiService;
 import com.example.jcbledger.network.RetrofitClient;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
+import java.util.Map;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -67,6 +70,9 @@ public class AddDriverEntryActivity extends AppCompatActivity {
             return;
         }
 
+        binding.btnSubmit.setEnabled(false);
+        binding.btnSubmit.setText("Saving...");
+
         DriverExpense expense = new DriverExpense();
         expense.setOperatorId(driverId);
         expense.setOperatorName(driverName);
@@ -85,13 +91,27 @@ public class AddDriverEntryActivity extends AppCompatActivity {
                     setResult(RESULT_OK);
                     finish();
                 } else {
-                    Toast.makeText(AddDriverEntryActivity.this, "Failed to save", Toast.LENGTH_SHORT).show();
+                    String errorMsg = "Failed to save";
+                    try {
+                        if (response.errorBody() != null) {
+                            String errorJson = response.errorBody().string();
+                            Map<String, String> errorMap = new Gson().fromJson(errorJson, new TypeToken<Map<String, String>>(){}.getType());
+                            if (errorMap != null && errorMap.containsKey("message")) {
+                                errorMsg = errorMap.get("message");
+                            }
+                        }
+                    } catch (Exception e) {}
+                    Toast.makeText(AddDriverEntryActivity.this, errorMsg, Toast.LENGTH_LONG).show();
+                    binding.btnSubmit.setEnabled(true);
+                    binding.btnSubmit.setText("SUBMIT");
                 }
             }
 
             @Override
             public void onFailure(Call<DriverExpense> call, Throwable t) {
                 Toast.makeText(AddDriverEntryActivity.this, "Network Error", Toast.LENGTH_SHORT).show();
+                binding.btnSubmit.setEnabled(true);
+                binding.btnSubmit.setText("SUBMIT");
             }
         });
     }

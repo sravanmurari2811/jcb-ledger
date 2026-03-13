@@ -8,6 +8,8 @@ import com.example.jcbledger.repository.CustomerRepository;
 import com.example.jcbledger.repository.WorkEntryRepository;
 import com.example.jcbledger.repository.TransactionHistoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,7 +37,27 @@ public class WorkEntryController {
     private TransactionHistoryRepository transactionRepository;
 
     @PostMapping
-    public ResponseEntity<WorkEntry> createWorkEntry(@RequestBody WorkEntryRequest request, @RequestParam String machineNumber) {
+    @CacheEvict(value = {"reports", "pendingBills", "totalPending"}, allEntries = true)
+    public ResponseEntity<?> createWorkEntry(@RequestBody WorkEntryRequest request, @RequestParam String machineNumber) {
+        // Validation to prevent overlapping Earth Work entries
+        if ("EARTH_WORK".equals(request.getWorkType())) {
+            LocalDate workDate = LocalDate.parse(request.getWorkDate());
+            LocalTime startTime = LocalTime.parse(request.getStartTime());
+            LocalTime endTime = LocalTime.parse(request.getEndTime());
+
+            List<WorkEntry> existingEntries = workEntryRepository.findByWorkDateBetweenAndMachineNumber(workDate, workDate, machineNumber);
+            for (WorkEntry existing : existingEntries) {
+                if ("EARTH_WORK".equals(existing.getWorkType())) {
+                    LocalTime exStart = existing.getStartTime();
+                    LocalTime exEnd = existing.getEndTime();
+                    // Check for overlap: (StartA < EndB) and (EndA > StartB)
+                    if (startTime.isBefore(exEnd) && endTime.isAfter(exStart)) {
+                        return ResponseEntity.badRequest().body(Map.of("message", "Overlapping Earth Work entry found for this time duration."));
+                    }
+                }
+            }
+        }
+
         Customer customer = customerRepository.findByMobile(request.getCustomerMobile())
                 .orElseGet(() -> {
                     Customer newCustomer = new Customer();
@@ -97,6 +119,7 @@ public class WorkEntryController {
     }
 
     @PostMapping("/update-payment/{id}")
+    @CacheEvict(value = {"reports", "pendingBills", "totalPending"}, allEntries = true)
     public ResponseEntity<WorkEntry> updatePayment(@PathVariable Long id, @RequestBody Map<String, Object> payload) {
         WorkEntry entry = workEntryRepository.findById(id).orElseThrow();
         double additionalAmount = Double.parseDouble(payload.get("amount").toString());
@@ -120,6 +143,7 @@ public class WorkEntryController {
     }
 
     @GetMapping("/total-pending")
+    @Cacheable(value = "totalPending", key = "#machineNumber")
     public ResponseEntity<Map<String, Double>> getTotalPending(@RequestParam String machineNumber) {
         List<WorkEntry> entries = workEntryRepository.findByMachineNumber(machineNumber);
         double total = entries.stream()
@@ -129,11 +153,13 @@ public class WorkEntryController {
     }
 
     @GetMapping("/pending-bills")
+    @Cacheable(value = "pendingBills", key = "#machineNumber")
     public ResponseEntity<List<WorkEntry>> getPendingBills(@RequestParam String machineNumber) {
         return ResponseEntity.ok(workEntryRepository.findByStatusNotAndMachineNumber("cleared", machineNumber));
     }
 
     @GetMapping("/reports")
+    @Cacheable(value = "reports", key = "{#filter, #statusFilter, #machineNumber, #date}")
     public ResponseEntity<List<WorkEntry>> getReports(
             @RequestParam String filter,
             @RequestParam(required = false, defaultValue = "ALL") String statusFilter,
@@ -197,6 +223,7 @@ public class WorkEntryController {
     }
 
     @PostMapping("/receive-payment/{mobile}")
+    @CacheEvict(value = {"reports", "pendingBills", "totalPending"}, allEntries = true)
     public ResponseEntity<?> receivePayment(@PathVariable String mobile, @RequestBody Map<String, Object> payload) {
         Double paymentAmount = Double.parseDouble(payload.get("amount").toString());
         String method = payload.get("paymentMethod").toString();
