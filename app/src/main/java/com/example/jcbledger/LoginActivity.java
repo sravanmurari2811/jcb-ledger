@@ -29,6 +29,11 @@ public class LoginActivity extends AppCompatActivity {
 
         apiService = RetrofitClient.getClient().create(ApiService.class);
 
+        // Warm up the Render backend immediately when the login screen opens.
+        // This pings the server while the user is typing, significantly reducing
+        // the wait time when they finally click Login.
+        pingServer();
+
         binding.etPhone.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -60,6 +65,21 @@ public class LoginActivity extends AppCompatActivity {
 
         binding.btnRegister.setOnClickListener(v -> {
             startActivity(new Intent(this, RegisterActivity.class));
+        });
+    }
+
+    private void pingServer() {
+        // Simple dummy call just to wake up the server.
+        // Using a non-existent mobile number or just any GET request.
+        apiService.getTotalPending("WAKEUP").enqueue(new Callback<Map<String, Double>>() {
+            @Override
+            public void onResponse(Call<Map<String, Double>> call, Response<Map<String, Double>> response) {
+                // Ignore result, purpose is just to wake the JVM on Render.
+            }
+            @Override
+            public void onFailure(Call<Map<String, Double>> call, Throwable t) {
+                // Ignore failure
+            }
         });
     }
 
