@@ -177,15 +177,6 @@ public class WorkEntryActivity extends AppCompatActivity {
         String startStr = binding.etStartTime.getText().toString();
         String endStr = binding.etEndTime.getText().toString();
         if (!startStr.isEmpty() && !endStr.isEmpty()) {
-            if (startStr.equals(endStr)) {
-                binding.etEndTime.setError("Start and End time cannot be the same");
-                calculatedTotalHours = 0;
-                binding.tvTotalTimeDisplay.setText("Total Time: 0.00 hrs");
-                return;
-            } else {
-                binding.etEndTime.setError(null);
-            }
-            
             long diff = endTimeCalendar.getTimeInMillis() - startTimeCalendar.getTimeInMillis();
             if (diff < 0) diff += 24 * 60 * 60 * 1000;
             
@@ -330,10 +321,8 @@ public class WorkEntryActivity extends AppCompatActivity {
             Toast.makeText(this, "Customer name is required", Toast.LENGTH_SHORT).show();
             return false;
         }
-        if (binding.etPlace.getText().toString().trim().isEmpty()) {
-            Toast.makeText(this, "Location/Place is required", Toast.LENGTH_SHORT).show();
-            return false;
-        }
+        
+        // Location/Place is OPTIONAL - No validation here now.
 
         if (binding.rbEarthWork.isChecked()) {
             if (binding.etStartTime.getText().toString().isEmpty() || binding.etEndTime.getText().toString().isEmpty()) {

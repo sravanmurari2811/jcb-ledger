@@ -89,7 +89,8 @@
                         android:id="@+id/etMobile"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="phone"
+                        android:inputType="number"
+                        android:digits="0123456789"
                         android:maxLength="10" />
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -243,14 +244,18 @@
                         android:orientation="vertical"
                         android:layout_marginTop="8dp" />
 
-                    <Button
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnAddNewTractor"
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:text="+ ADD ANOTHER TRACTOR"
-                        app:icon="@android:drawable/ic_input_add" />
+                        android:layout_gravity="center_horizontal"
+                        android:text="ADD TRACTOR"
+                        android:textColor="@color/primary"
+                        app:strokeColor="@color/primary"
+                        app:icon="@android:drawable/ic_input_add"
+                        app:iconTint="@color/primary" />
 
                     <TextView
                         android:id="@+id/tvTotalTripsLabel"
@@ -449,7 +454,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="₹ 0.00"
-                        android:textColor="@color/white"
+                        android:textColor="#D32F2F"
                         android:textSize="22sp"
                         android:textStyle="bold" />
                 </LinearLayout>
