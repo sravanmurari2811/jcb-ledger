@@ -41,6 +41,7 @@ public class WorkEntryActivity extends AppCompatActivity {
     
     private List<ItemTractorRowBinding> tractorRows = new ArrayList<>();
     private double calculatedTotalHours = 0;
+    private double rawTotalAmount = 0;
     private String machineNumber;
 
     @Override
@@ -61,6 +62,9 @@ public class WorkEntryActivity extends AppCompatActivity {
 
     private void initViews() {
         binding.etDate.setText(dateFormat.format(workCalendar.getTime()));
+        binding.etStartTime.setText("");
+        binding.etEndTime.setText("");
+        binding.tvTotalTimeDisplay.setText("Total Duration: 0 hrs 0 mins");
     }
 
     private void setupListeners() {
@@ -154,20 +158,19 @@ public class WorkEntryActivity extends AppCompatActivity {
 
     private void showTimePicker(boolean isStart) {
         Calendar c = isStart ? startTimeCalendar : endTimeCalendar;
-        new TimePickerDialog(this, (view, hourOfDay, minute) -> {
-            c.set(Calendar.HOUR_OF_DAY, hourOfDay);
-            c.set(Calendar.MINUTE, minute);
-            c.set(Calendar.SECOND, 0);
-            
-            if (isStart) {
-                binding.etStartTime.setText(timeFormat.format(c.getTime()));
-            } else {
-                binding.etEndTime.setText(timeFormat.format(c.getTime()));
-            }
-            
-            updateCalculatedTime();
-            calculateTotals();
-        }, c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), true).show();
+        TimePickerDialog tpd = new TimePickerDialog(this, 
+            android.R.style.Theme_Holo_Light_Dialog_NoActionBar, 
+            (view, hourOfDay, minute) -> {
+                c.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                c.set(Calendar.MINUTE, minute);
+                c.set(Calendar.SECOND, 0);
+                if (isStart) binding.etStartTime.setText(timeFormat.format(c.getTime()));
+                else binding.etEndTime.setText(timeFormat.format(c.getTime()));
+                updateCalculatedTime();
+                calculateTotals();
+            }, c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), true);
+        tpd.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        tpd.show();
     }
 
     private void updateCalculatedTime() {
@@ -177,7 +180,7 @@ public class WorkEntryActivity extends AppCompatActivity {
             if (startStr.equals(endStr)) {
                 binding.etEndTime.setError("Start and End time cannot be the same");
                 calculatedTotalHours = 0;
-                binding.tvTotalTimeDisplay.setText("Total Time: 0 hours 0 minutes");
+                binding.tvTotalTimeDisplay.setText("Total Time: 0.00 hrs");
                 return;
             } else {
                 binding.etEndTime.setError(null);
@@ -187,14 +190,11 @@ public class WorkEntryActivity extends AppCompatActivity {
             if (diff < 0) diff += 24 * 60 * 60 * 1000;
             
             long totalMinutes = diff / (1000 * 60);
+            calculatedTotalHours = totalMinutes / 60.0;
+            
             long h = totalMinutes / 60;
             long m = totalMinutes % 60;
-            
-            calculatedTotalHours = h + (m / 60.0);
-            binding.tvTotalTimeDisplay.setText("Total Time: " + h + " hours " + m + " minutes");
-        } else {
-            calculatedTotalHours = 0;
-            binding.tvTotalTimeDisplay.setText("Total Time: 0 hours 0 minutes");
+            binding.tvTotalTimeDisplay.setText(String.format(Locale.getDefault(), "Total Duration: %d hrs %d mins", h, m));
         }
     }
 
@@ -230,6 +230,7 @@ public class WorkEntryActivity extends AppCompatActivity {
                 total = (totalTrips * charge) + travel;
             }
 
+            rawTotalAmount = total;
             double amountPaid = getDoubleValue(binding.etAmountPaid.getText().toString());
             double pending = total - amountPaid;
 
@@ -245,7 +246,7 @@ public class WorkEntryActivity extends AppCompatActivity {
     }
 
     private double getDoubleValue(String val) {
-        if (val == null || val.isEmpty() || val.equals("0")) return 0;
+        if (val == null || val.isEmpty()) return 0;
         try { return Double.parseDouble(val); } catch (Exception e) { return 0; }
     }
 
@@ -255,35 +256,26 @@ public class WorkEntryActivity extends AppCompatActivity {
         binding.btnSave.setEnabled(false);
         binding.btnSave.setText("Saving...");
 
-        String mobile = binding.etMobile.getText().toString();
-        String name = binding.etName.getText().toString();
-        String date = binding.etDate.getText().toString();
-        double travel = getDoubleValue(binding.etTravel.getText().toString());
-        double total = getDoubleValue(binding.tvTotal.getText().toString().replace("₹ ", "").replace(",", ""));
-        double amountPaid = getDoubleValue(binding.etAmountPaid.getText().toString());
-        double pending = getDoubleValue(binding.tvPending.getText().toString().replace("₹ ", "").replace(",", ""));
-        String place = binding.etPlace.getText().toString();
-        String paymentMethod = binding.rbCash.isChecked() ? "Cash" : "UPI";
-        String workType = binding.rbEarthWork.isChecked() ? "EARTH_WORK" : "LOADING";
-
         WorkEntryRequest request = new WorkEntryRequest();
-        request.setCustomerMobile(mobile);
-        request.setCustomerName(name);
-        request.setWorkDate(date);
-        request.setWorkType(workType);
-        request.setTravelCost(travel);
-        request.setTotalAmount(total);
+        request.setCustomerMobile(binding.etMobile.getText().toString());
+        request.setCustomerName(binding.etName.getText().toString());
+        request.setWorkDate(binding.etDate.getText().toString());
+        request.setPlace(binding.etPlace.getText().toString());
+        request.setTravelCost(getDoubleValue(binding.etTravel.getText().toString()));
+        request.setTotalAmount(rawTotalAmount);
+        double amountPaid = getDoubleValue(binding.etAmountPaid.getText().toString());
         request.setAmountPaid(amountPaid);
-        request.setPendingAmount(pending);
-        request.setPaymentMethod(paymentMethod);
-        request.setPlace(place);
+        request.setPendingAmount(rawTotalAmount - amountPaid);
+        request.setPaymentMethod(binding.rbCash.isChecked() ? "Cash" : "UPI");
 
-        if (workType.equals("EARTH_WORK")) {
+        if (binding.rbEarthWork.isChecked()) {
+            request.setWorkType("EARTH_WORK");
             request.setStartTime(binding.etStartTime.getText().toString());
             request.setEndTime(binding.etEndTime.getText().toString());
             request.setTotalHours(calculatedTotalHours);
             request.setRate(getDoubleValue(binding.etRate.getText().toString()));
         } else {
+            request.setWorkType("LOADING");
             int totalTrips = 0;
             StringBuilder tractors = new StringBuilder();
             for (int i = 0; i < tractorRows.size(); i++) {
@@ -317,78 +309,63 @@ public class WorkEntryActivity extends AppCompatActivity {
                     } catch (Exception e) {}
                     Toast.makeText(WorkEntryActivity.this, errorMsg, Toast.LENGTH_LONG).show();
                     binding.btnSave.setEnabled(true);
-                    binding.btnSave.setText("SAVE ENTRY");
+                    binding.btnSave.setText("SAVE WORK ENTRY");
                 }
             }
             @Override
             public void onFailure(Call<WorkEntry> call, Throwable t) {
                 Toast.makeText(WorkEntryActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                 binding.btnSave.setEnabled(true);
-                binding.btnSave.setText("SAVE ENTRY");
+                binding.btnSave.setText("SAVE WORK ENTRY");
             }
         });
     }
 
     private boolean validateForm() {
-        boolean isValid = true;
-
         if (binding.etMobile.getText().toString().length() != 10) {
-            binding.etMobile.setError("Enter 10-digit mobile number");
-            isValid = false;
+            Toast.makeText(this, "Enter valid 10-digit mobile number", Toast.LENGTH_SHORT).show();
+            return false;
         }
-
         if (binding.etName.getText().toString().trim().isEmpty()) {
-            binding.etName.setError("Customer name is required");
-            isValid = false;
+            Toast.makeText(this, "Customer name is required", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        if (binding.etPlace.getText().toString().trim().isEmpty()) {
+            Toast.makeText(this, "Location/Place is required", Toast.LENGTH_SHORT).show();
+            return false;
         }
 
         if (binding.rbEarthWork.isChecked()) {
-            if (binding.etStartTime.getText().toString().isEmpty()) {
-                binding.etStartTime.setError("Required");
-                isValid = false;
+            if (binding.etStartTime.getText().toString().isEmpty() || binding.etEndTime.getText().toString().isEmpty()) {
+                Toast.makeText(this, "Please select Start and End time", Toast.LENGTH_SHORT).show();
+                return false;
             }
-            if (binding.etEndTime.getText().toString().isEmpty()) {
-                binding.etEndTime.setError("Required");
-                isValid = false;
-            }
-            if (calculatedTotalHours <= 0 && !binding.etStartTime.getText().toString().isEmpty() && !binding.etEndTime.getText().toString().isEmpty()) {
+            if (calculatedTotalHours <= 0) {
                 Toast.makeText(this, "Work duration must be greater than zero", Toast.LENGTH_SHORT).show();
-                isValid = false;
+                return false;
             }
             if (getDoubleValue(binding.etRate.getText().toString()) <= 0) {
-                binding.etRate.setError("Rate must be greater than zero");
-                isValid = false;
+                Toast.makeText(this, "Please enter hourly rate", Toast.LENGTH_SHORT).show();
+                return false;
             }
         } else {
-            boolean tractorError = false;
-            for (int i = 0; i < tractorRows.size(); i++) {
-                ItemTractorRowBinding row = tractorRows.get(i);
-                if (row.etTractorName.getText().toString().trim().isEmpty()) {
-                    row.etTractorName.setError("Please enter tractor name");
-                    isValid = false;
-                    tractorError = true;
+            for (ItemTractorRowBinding row : tractorRows) {
+                if (row.etTractorName.getText().toString().trim().isEmpty() || getDoubleValue(row.etTractorTrips.getText().toString()) <= 0) {
+                    Toast.makeText(this, "Enter valid tractor details and trips", Toast.LENGTH_SHORT).show();
+                    return false;
                 }
-                if (getDoubleValue(row.etTractorTrips.getText().toString()) <= 0) {
-                    row.etTractorTrips.setError("Enter trips");
-                    isValid = false;
-                }
-            }
-            if (tractorError) {
-                Toast.makeText(this, "Please enter tractor name", Toast.LENGTH_SHORT).show();
             }
             if (getDoubleValue(binding.etChargePerTrip.getText().toString()) <= 0) {
-                binding.etChargePerTrip.setError("Charge must be greater than zero");
-                isValid = false;
+                Toast.makeText(this, "Please enter charge per trip", Toast.LENGTH_SHORT).show();
+                return false;
             }
         }
 
-        double total = getDoubleValue(binding.tvTotal.getText().toString().replace("₹ ", "").replace(",", ""));
-        double paid = getDoubleValue(binding.etAmountPaid.getText().toString());
-        if (paid > total) {
-            binding.etAmountPaid.setError("Cannot pay more than total amount");
-            isValid = false;
+        if (getDoubleValue(binding.etAmountPaid.getText().toString()) > rawTotalAmount) {
+            Toast.makeText(this, "Paid amount cannot exceed total amount", Toast.LENGTH_SHORT).show();
+            return false;
         }
 
-        return isValid;
+        return true;
     }
 }
