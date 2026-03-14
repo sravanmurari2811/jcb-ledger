@@ -2,10 +2,19 @@ package com.example.jcbledger;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.Bundle;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.StyleSpan;
+import android.view.View;
+import android.widget.PopupMenu;
 import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import com.example.jcbledger.databinding.ActivityDashboardBinding;
 import com.example.jcbledger.model.Customer;
 import com.example.jcbledger.network.ApiService;
@@ -21,6 +30,8 @@ public class DashboardActivity extends AppCompatActivity {
     private ActivityDashboardBinding binding;
     private ApiService apiService;
     private String machineNumber;
+    private String userRole;
+    private String userName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,16 +39,87 @@ public class DashboardActivity extends AppCompatActivity {
         binding = ActivityDashboardBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        SharedPreferences prefs = getSharedPreferences("JCBPrefs", MODE_PRIVATE);
+        SharedPreferences prefs = getGetSharedPreferences();
         machineNumber = prefs.getString("machineNumber", "");
+        userRole = prefs.getString("userRole", "OPERATOR");
+        userName = prefs.getString("userName", "User");
 
         apiService = RetrofitClient.getClient().create(ApiService.class);
 
         setupMenu();
-        fetchStats();
         setupSearch();
         
-        binding.btnLogout.setOnClickListener(v -> showLogoutDialog());
+        binding.btnMenu.setOnClickListener(this::showSideMenu);
+    }
+
+    private SharedPreferences getGetSharedPreferences() {
+        return getSharedPreferences("JCBPrefs", MODE_PRIVATE);
+    }
+
+    private void showSideMenu(View v) {
+        PopupMenu popup = new PopupMenu(this, v);
+        
+        int order = 0;
+        if ("ADMIN".equalsIgnoreCase(userRole) || "OWNER".equalsIgnoreCase(userRole)) {
+            popup.getMenu().add(0, 1, order++, "User Requests");
+        }
+        
+        if ("ADMIN".equalsIgnoreCase(userRole)) {
+            popup.getMenu().add(0, 6, order++, "User Management");
+        }
+        
+        popup.getMenu().add(0, 2, order++, "My Profile");
+        popup.getMenu().add(0, 5, order++, "Logout");
+
+        popup.setOnMenuItemClickListener(item -> {
+            switch (item.getItemId()) {
+                case 1:
+                    startActivity(new Intent(this, ApprovalActivity.class));
+                    return true;
+                case 6:
+                    startActivity(new Intent(this, UserManagementActivity.class));
+                    return true;
+                case 2:
+                    showProfileDialog();
+                    return true;
+                case 5:
+                    showLogoutDialog();
+                    return true;
+                default:
+                    return false;
+            }
+        });
+        popup.show();
+    }
+
+    private void showProfileDialog() {
+        SpannableStringBuilder builder = new SpannableStringBuilder();
+        
+        appendStyled(builder, "Name: ", userName);
+        builder.append("\n\n");
+        appendStyled(builder, "Role: ", userRole);
+        builder.append("\n\n");
+        appendStyled(builder, "Vehicle: ", machineNumber);
+
+        new AlertDialog.Builder(this)
+            .setTitle("User Profile")
+            .setMessage(builder)
+            .setPositiveButton("OK", null)
+            .show();
+    }
+
+    private void appendStyled(SpannableStringBuilder builder, String key, String value) {
+        int start = builder.length();
+        builder.append(key);
+        int end = builder.length();
+        
+        // Color for Key
+        builder.setSpan(new ForegroundColorSpan(ContextCompat.getColor(this, R.color.primary)), 
+                start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        // Bold for Key
+        builder.setSpan(new StyleSpan(Typeface.BOLD), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        
+        builder.append(value);
     }
 
     private void showLogoutDialog() {
@@ -50,7 +132,7 @@ public class DashboardActivity extends AppCompatActivity {
     }
 
     private void performLogout() {
-        SharedPreferences prefs = getSharedPreferences("JCBPrefs", MODE_PRIVATE);
+        SharedPreferences prefs = getGetSharedPreferences();
         prefs.edit().clear().apply();
         
         Intent intent = new Intent(this, LoginActivity.class);
@@ -79,7 +161,6 @@ public class DashboardActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<Map<String, Double>> call, Throwable t) {
-                // Silent failure or log
             }
         });
     }

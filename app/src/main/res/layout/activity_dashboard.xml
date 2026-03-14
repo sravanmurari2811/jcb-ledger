@@ -29,14 +29,14 @@
                 android:textStyle="bold" />
 
             <ImageView
-                android:id="@+id/btnLogout"
+                android:id="@+id/btnMenu"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:layout_alignParentEnd="true"
                 android:layout_alignTop="@id/tvTitle"
-                android:src="@android:drawable/ic_lock_power_off"
-                app:tint="@color/error_red"
-                android:contentDescription="Logout"
+                android:src="@android:drawable/ic_menu_sort_by_size"
+                app:tint="@color/white"
+                android:contentDescription="Menu"
                 android:clickable="true"
                 android:focusable="true"
                 android:background="?attr/selectableItemBackgroundBorderless" />

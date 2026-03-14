@@ -69,7 +69,10 @@ public class RegisterActivity extends AppCompatActivity {
                 @Override
                 public void onResponse(Call<Map<String, Object>> call, Response<Map<String, Object>> response) {
                     if (response.isSuccessful()) {
-                        Toast.makeText(RegisterActivity.this, "Registration successful", Toast.LENGTH_SHORT).show();
+                        String successMsg = role.equals("OWNER") ? 
+                            "Request sent to Admin for approval." : 
+                            "Request sent to Owner for approval.";
+                        Toast.makeText(RegisterActivity.this, successMsg, Toast.LENGTH_LONG).show();
                         finish();
                     } else {
                         String errorMessage = "Registration failed";

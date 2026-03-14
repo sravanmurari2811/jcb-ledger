@@ -33,6 +33,8 @@
         <activity android:name=".DriverExpenseActivity" android:exported="false" />
         <activity android:name=".DriverListActivity" android:exported="false" />
         <activity android:name=".AddDriverEntryActivity" android:exported="false" />
+        <activity android:name=".ApprovalActivity" android:exported="false" />
+        <activity android:name=".UserManagementActivity" android:exported="false" />
 
     </application>
 

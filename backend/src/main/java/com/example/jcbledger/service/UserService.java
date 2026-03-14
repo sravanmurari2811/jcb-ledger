@@ -23,7 +23,9 @@ public class UserService {
             user.setVehicleNumber(user.getVehicleNumber().toUpperCase());
         }
 
-        // Logic: No operator should be allowed for a specific vehicle if respective owner is not found
+        // Default all new registrations to PENDING
+        user.setStatus("PENDING");
+
         if ("OPERATOR".equalsIgnoreCase(user.getRole())) {
             String vehicleNumber = user.getVehicleNumber();
             if (vehicleNumber == null || vehicleNumber.trim().isEmpty()) {
@@ -32,15 +34,27 @@ public class UserService {
             
             List<User> owners = userRepository.findByRoleAndVehicleNumber("OWNER", vehicleNumber);
             if (owners.isEmpty()) {
-                throw new Exception("No Owner found for vehicle: " + vehicleNumber + ". Operator cannot register.");
+                throw new Exception("No Owner found for vehicle: " + vehicleNumber + ". Please ask your Owner to register first.");
             }
         }
         
-        user.setStatus("ACTIVE");
         return userRepository.save(user);
     }
 
-    public Optional<User> login(String phone, String password) {
-        return userRepository.findByPhoneAndPassword(phone, password);
+    public Optional<User> login(String phone, String password) throws Exception {
+        Optional<User> userOpt = userRepository.findByPhoneAndPassword(phone, password);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            // Strict check: Only ACTIVE users can log in
+            if (!"ACTIVE".equalsIgnoreCase(user.getStatus())) {
+                if ("OWNER".equalsIgnoreCase(user.getRole())) {
+                    throw new Exception("Waiting for Admin approval. Please contact support.");
+                } else {
+                    throw new Exception("Waiting for Owner approval. Please contact your machine owner.");
+                }
+            }
+            return Optional.of(user);
+        }
+        return Optional.empty();
     }
 }

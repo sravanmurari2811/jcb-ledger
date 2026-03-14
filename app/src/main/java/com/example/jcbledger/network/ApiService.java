@@ -3,6 +3,7 @@ package com.example.jcbledger.network;
 import com.example.jcbledger.model.Customer;
 import com.example.jcbledger.model.WorkEntry;
 import com.example.jcbledger.model.DriverExpense;
+import com.example.jcbledger.model.User;
 import com.example.jcbledger.dto.WorkEntryRequest;
 import java.util.List;
 import java.util.Map;
@@ -66,4 +67,18 @@ public interface ApiService {
 
     @GET("api/driver-expenses/operator/{operatorId}")
     Call<List<DriverExpense>> getDriverExpenses(@Path("operatorId") String operatorId);
+
+    // Approval Endpoints
+    @GET("api/auth/pending-approvals")
+    Call<List<User>> getPendingApprovals(@Query("role") String role, @Query("vehicleNumber") String vehicleNumber);
+
+    @POST("api/auth/approve-user/{id}")
+    Call<Map<String, Object>> approveUser(@Path("id") Long id);
+
+    // Admin User Management Endpoints
+    @GET("api/auth/all-users")
+    Call<List<User>> getAllUsers(@Query("role") String role);
+
+    @POST("api/auth/update-user-status")
+    Call<Map<String, Object>> updateUserStatus(@Body Map<String, Object> payload);
 }

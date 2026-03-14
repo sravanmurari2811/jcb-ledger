@@ -48,7 +48,8 @@
             android:id="@+id/etRegPhone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="phone"
+            android:inputType="number"
+            android:digits="0123456789"
             android:maxLength="10" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -75,14 +76,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:hint="Vehicle Number (e.g., KA01AB1234)"
+        android:hint="Vehicle Number (e.g., AP01AB1234)"
         app:layout_constraintTop_toBottomOf="@id/tilRegPassword">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etRegVehicle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="textCapCharacters" />
+            android:inputType="textCapCharacters"
+            android:maxLength="10" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <TextView
