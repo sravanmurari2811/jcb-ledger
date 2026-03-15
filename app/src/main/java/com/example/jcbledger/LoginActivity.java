@@ -16,6 +16,8 @@ import com.example.jcbledger.network.ApiService;
 import com.example.jcbledger.network.RetrofitClient;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import retrofit2.Call;
@@ -176,7 +178,16 @@ public class LoginActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<Map<String, Object>> call, Throwable t) {
-                Toast.makeText(LoginActivity.this, "Login error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                String errorMsg = "Connection error";
+                if (t instanceof UnknownHostException) {
+                    errorMsg = "No internet connection";
+                } else if (t instanceof IOException) {
+                    errorMsg = "Server unreachable. Please try again later.";
+                } else {
+                    errorMsg = "Error: " + t.getMessage();
+                }
+                
+                Toast.makeText(LoginActivity.this, errorMsg, Toast.LENGTH_SHORT).show();
                 binding.btnLogin.setEnabled(true);
                 binding.btnLogin.setText("LOGIN");
             }
